@@ -2,7 +2,12 @@ namespace SpriteKind {
     export const Dish = SpriteKind.create()
     export const SettledDish = SpriteKind.create()
 }
-
+controller.A.onEvent(ControllerButtonEvent.Pressed, function() {
+    let dishes = sprites.allOfKind(SpriteKind.Dish)
+    let currentDish = dishes[0] 
+    let rotatedImage = scaling.rot(currentDish.image, 90)
+    currentDish.setImage(rotatedImage)
+})
 scene.setBackgroundImage(img`
     9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
     9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
@@ -137,6 +142,15 @@ function showInstructions(){
     }
     game.showLongText(msg, DialogLayout.Full)
 }
+function unStickDish(theDish: Sprite){
+    let maxBottomY = 7 * 16
+    let maxTopY = 16
+    if(theDish.bottom > maxBottomY){
+        theDish.bottom = maxBottomY 
+    } else if (theDish.top < maxTopY){
+        theDish.top = maxTopY
+    }
+}
 function makeDish(){
     let dishIndex = randint(0, dishes.length - 1) // randomly generated number
     let dishImg = dishes[dishIndex].img
@@ -144,18 +158,29 @@ function makeDish(){
     tiles.placeOnTile(dishSprite, tiles.getTileLocation(9, randint(1, 6)))
     dishSprite.vx = -100
     controller.moveSprite(dishSprite, 0, 100)
+    unStickDish(dishSprite)
 }
 function stopDish(theDish: Sprite){
     controller.moveSprite(theDish, 0, 0)
     theDish.vx = 0
     if(theDish.right > 5 * 16){
         //stop making dishes
+        theDish.setKind(SpriteKind.SettledDish)
     }
     else {
         theDish.setKind(SpriteKind.SettledDish)
         makeDish()
     }
 }
+// game.onUpdate(function() {
+//     let dishes = sprites.allOfKind(SpriteKind.Dish)
+//     if(dishes.length > 0){
+//         let dish = dishes[0]
+//         if (dish.vx == 0){
+//             stopDish(dish)
+//         }
+//     }   
+// })
 sprites.onOverlap(SpriteKind.Dish, SpriteKind.SettledDish, function(sprite: Sprite, otherSprite: Sprite) {
     stopDish(sprite)
 })
